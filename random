@@ -1,0 +1,294 @@
+-- Jump Multiplier + Infinite Stamina GUI
+-- Default keybind: K
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+local currentKeybind = Enum.KeyCode.K
+local listeningForKey = false
+
+-- Jump Multiplier
+local function getJumpMultiplier()
+	local character = player.Character or player.CharacterAdded:Wait()
+	local playerInfo = character:WaitForChild("PlayerInfo", 10)
+	if not playerInfo then return nil end
+	return playerInfo:FindFirstChild("JumpMultiplier")
+end
+
+local jumpMult = getJumpMultiplier()
+
+-- Stamina
+local staminaEnabled = true
+local staminaConnection = nil
+local stamina = nil
+
+local function getStamina()
+	local character = player.Character or player.CharacterAdded:Wait()
+	local playerInfo = character:WaitForChild("PlayerInfo", 10)
+	if not playerInfo then return nil end
+	return playerInfo:FindFirstChild("Stamina")
+end
+
+local function startStamina()
+	if staminaConnection then
+		staminaConnection:Disconnect()
+	end
+
+	staminaConnection = RunService.Heartbeat:Connect(function()
+		if not staminaEnabled then return end
+
+		if not stamina or not stamina.Parent then
+			stamina = getStamina()
+			if not stamina then return end
+		end
+
+		if stamina.Value < stamina.MaxValue then
+			stamina.Value = stamina.MaxValue
+		end
+	end)
+end
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "JumpAndStaminaGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 250, 0, 270)
+Frame.Position = UDim2.new(0.5, -125, 0.22, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Visible = true
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = Frame
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -35, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "Jump + Stamina"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 17
+Title.Parent = Frame
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 28, 0, 28)
+CloseButton.Position = UDim2.new(1, -32, 0, 3)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.Parent = Frame
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
+
+-- Jump Section
+local JumpLabel = Instance.new("TextLabel")
+JumpLabel.Size = UDim2.new(1, -20, 0, 18)
+JumpLabel.Position = UDim2.new(0, 10, 0, 36)
+JumpLabel.BackgroundTransparency = 1
+JumpLabel.Text = "Jump Multiplier"
+JumpLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+JumpLabel.Font = Enum.Font.Gotham
+JumpLabel.TextSize = 13
+JumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+JumpLabel.Parent = Frame
+
+local ValueLabel = Instance.new("TextLabel")
+ValueLabel.Size = UDim2.new(1, -20, 0, 18)
+ValueLabel.Position = UDim2.new(0, 10, 0, 54)
+ValueLabel.BackgroundTransparency = 1
+ValueLabel.Text = "Current: 2.0  →  Height: 9.2"
+ValueLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+ValueLabel.Font = Enum.Font.Gotham
+ValueLabel.TextSize = 13
+ValueLabel.TextXAlignment = Enum.TextXAlignment.Left
+ValueLabel.Parent = Frame
+
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(1, -20, 0, 28)
+TextBox.Position = UDim2.new(0, 10, 0, 76)
+TextBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.PlaceholderText = "Enter value (ex: 5)"
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextSize = 14
+TextBox.ClearTextOnFocus = false
+TextBox.Parent = Frame
+
+local BoxCorner = Instance.new("UICorner")
+BoxCorner.CornerRadius = UDim.new(0, 6)
+BoxCorner.Parent = TextBox
+
+local ApplyButton = Instance.new("TextButton")
+ApplyButton.Size = UDim2.new(0.45, 0, 0, 28)
+ApplyButton.Position = UDim2.new(0.05, 0, 0, 112)
+ApplyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ApplyButton.Text = "Apply"
+ApplyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ApplyButton.Font = Enum.Font.GothamBold
+ApplyButton.TextSize = 14
+ApplyButton.Parent = Frame
+
+local ApplyCorner = Instance.new("UICorner")
+ApplyCorner.CornerRadius = UDim.new(0, 6)
+ApplyCorner.Parent = ApplyButton
+
+local ResetButton = Instance.new("TextButton")
+ResetButton.Size = UDim2.new(0.45, 0, 0, 28)
+ResetButton.Position = UDim2.new(0.5, 0, 0, 112)
+ResetButton.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+ResetButton.Text = "Reset (2.0)"
+ResetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ResetButton.Font = Enum.Font.GothamBold
+ResetButton.TextSize = 14
+ResetButton.Parent = Frame
+
+local ResetCorner = Instance.new("UICorner")
+ResetCorner.CornerRadius = UDim.new(0, 6)
+ResetCorner.Parent = ResetButton
+
+-- Stamina Section
+local StaminaLabel = Instance.new("TextLabel")
+StaminaLabel.Size = UDim2.new(1, -20, 0, 18)
+StaminaLabel.Position = UDim2.new(0, 10, 0, 150)
+StaminaLabel.BackgroundTransparency = 1
+StaminaLabel.Text = "Infinite Stamina"
+StaminaLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+StaminaLabel.Font = Enum.Font.Gotham
+StaminaLabel.TextSize = 13
+StaminaLabel.TextXAlignment = Enum.TextXAlignment.Left
+StaminaLabel.Parent = Frame
+
+local StaminaToggle = Instance.new("TextButton")
+StaminaToggle.Size = UDim2.new(0.9, 0, 0, 28)
+StaminaToggle.Position = UDim2.new(0.05, 0, 0, 170)
+StaminaToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 80)
+StaminaToggle.Text = "ON"
+StaminaToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+StaminaToggle.Font = Enum.Font.GothamBold
+StaminaToggle.TextSize = 15
+StaminaToggle.Parent = Frame
+
+local StaminaCorner = Instance.new("UICorner")
+StaminaCorner.CornerRadius = UDim.new(0, 6)
+StaminaCorner.Parent = StaminaToggle
+
+-- Keybind Section
+local KeybindLabel = Instance.new("TextLabel")
+KeybindLabel.Size = UDim2.new(1, -20, 0, 18)
+KeybindLabel.Position = UDim2.new(0, 10, 0, 208)
+KeybindLabel.BackgroundTransparency = 1
+KeybindLabel.Text = "Menu Keybind"
+KeybindLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+KeybindLabel.Font = Enum.Font.Gotham
+KeybindLabel.TextSize = 13
+KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
+KeybindLabel.Parent = Frame
+
+local KeybindButton = Instance.new("TextButton")
+KeybindButton.Size = UDim2.new(0.9, 0, 0, 28)
+KeybindButton.Position = UDim2.new(0.05, 0, 0, 228)
+KeybindButton.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+KeybindButton.Text = "Key: K"
+KeybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeybindButton.Font = Enum.Font.GothamBold
+KeybindButton.TextSize = 14
+KeybindButton.Parent = Frame
+
+local KeybindCorner = Instance.new("UICorner")
+KeybindCorner.CornerRadius = UDim.new(0, 6)
+KeybindCorner.Parent = KeybindButton
+
+-- Functions
+local function updateJumpLabel()
+	if jumpMult then
+		ValueLabel.Text = "Current: " .. string.format("%.1f", jumpMult.Value) .. "  →  Height: " .. string.format("%.1f", 7.2 + jumpMult.Value)
+	end
+end
+
+ApplyButton.MouseButton1Click:Connect(function()
+	local num = tonumber(TextBox.Text)
+	if num and jumpMult then
+		jumpMult.Value = math.clamp(num, -100, 100)
+		updateJumpLabel()
+	end
+end)
+
+ResetButton.MouseButton1Click:Connect(function()
+	if jumpMult then
+		jumpMult.Value = 2
+		TextBox.Text = "2"
+		updateJumpLabel()
+	end
+end)
+
+StaminaToggle.MouseButton1Click:Connect(function()
+	staminaEnabled = not staminaEnabled
+	if staminaEnabled then
+		StaminaToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 80)
+		StaminaToggle.Text = "ON"
+	else
+		StaminaToggle.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+		StaminaToggle.Text = "OFF"
+	end
+end)
+
+KeybindButton.MouseButton1Click:Connect(function()
+	listeningForKey = true
+	KeybindButton.Text = "Press any key..."
+	KeybindButton.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+	Frame.Visible = false
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+
+	if listeningForKey and input.UserInputType == Enum.UserInputType.Keyboard then
+		currentKeybind = input.KeyCode
+		KeybindButton.Text = "Key: " .. input.KeyCode.Name
+		KeybindButton.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+		listeningForKey = false
+		return
+	end
+
+	if input.KeyCode == currentKeybind then
+		Frame.Visible = not Frame.Visible
+	end
+end)
+
+-- Start
+if jumpMult then
+	updateJumpLabel()
+	jumpMult:GetPropertyChangedSignal("Value"):Connect(updateJumpLabel)
+end
+
+stamina = getStamina()
+startStamina()
+
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	jumpMult = getJumpMultiplier()
+	stamina = getStamina()
+	if jumpMult then
+		updateJumpLabel()
+	end
+end)
+
+print("[Jump + Stamina] Loaded | Default keybind: K")
