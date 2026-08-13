@@ -213,6 +213,18 @@ local KeybindCorner = Instance.new("UICorner")
 KeybindCorner.CornerRadius = UDim.new(0, 6)
 KeybindCorner.Parent = KeybindButton
 
+-- Credit
+local Credit = Instance.new("TextLabel")
+Credit.Size = UDim2.new(1, -12, 0, 16)
+Credit.Position = UDim2.new(0, 6, 1, -18)
+Credit.BackgroundTransparency = 1
+Credit.Text = "made by alej"
+Credit.TextColor3 = Color3.fromRGB(140, 140, 150)
+Credit.Font = Enum.Font.Gotham
+Credit.TextSize = 11
+Credit.TextXAlignment = Enum.TextXAlignment.Right
+Credit.Parent = Frame
+
 -- Functions
 local function updateJumpLabel()
 	if jumpMult then
@@ -290,5 +302,3 @@ player.CharacterAdded:Connect(function()
 		updateJumpLabel()
 	end
 end)
-
-print("[Jump + Stamina] Loaded | Default keybind: K")
